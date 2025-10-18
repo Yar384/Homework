@@ -1,174 +1,187 @@
 #include <iostream>
-#include <cstring>
 using namespace std;
 
-class String {
+class DoublyLinkedList {
 private:
-    char* str;
-    int length;
+    struct Node {
+        int value;
+        Node* prev;
+        Node* next;
+
+        Node(int val) : value(val), prev(nullptr), next(nullptr) {}
+    };
+
+    Node* head;
+    Node* tail;
+    int count;
 
 public:
-    String(const char* s = "") {
-        length = strlen(s);
-        str = new char[length + 1];
-        strcpy(str, s);
+    DoublyLinkedList() : head(nullptr), tail(nullptr), count(0) {}
+
+    ~DoublyLinkedList() {
+        clear();
     }
 
-    String(const String& other) {
-        length = other.length;
-        str = new char[length + 1];
-        strcpy(str, other.str);
+    // 1
+    void push_front(int value) {
+        Node* newNode = new Node(value);
+        newNode->next = head;
+        if (head) head->prev = newNode;
+        else tail = newNode; // Якщо список був порожній
+        head = newNode;
+        count++;
     }
 
-    String(String&& other) noexcept {
-        str = other.str;
-        length = other.length;
-        other.str = nullptr;
-        other.length = 0;
+    // 2
+    void push_back(int value) {
+        Node* newNode = new Node(value);
+        newNode->prev = tail;
+        if (tail) tail->next = newNode;
+        else head = newNode; // Якщо список був порожній
+        tail = newNode;
+        count++;
     }
 
-    String& operator=(const String& other) {
-        if (this != &other) {
-            delete[] str;
-            length = other.length;
-            str = new char[length + 1];
-            strcpy(str, other.str);
+    // 3
+    void pop_front() {
+        if (!head) return;
+        Node* temp = head;
+        head = head->next;
+        if (head) head->prev = nullptr;
+        else tail = nullptr;
+        delete temp;
+        count--;
+    }
+
+    // 4
+    void pop_back() {
+        if (!tail) return;
+        Node* temp = tail;
+        tail = tail->prev;
+        if (tail) tail->next = nullptr;
+        else head = nullptr;
+        delete temp;
+        count--;
+    }
+
+    // 5
+    void insert(int position, int value) {
+        if (position <= 0) {
+            push_front(value);
+            return;
         }
-        return *this;
-    }
-
-    String& operator=(String&& other) noexcept {
-        if (this != &other) {
-            delete[] str;
-            str = other.str;
-            length = other.length;
-            other.str = nullptr;
-            other.length = 0;
+        if (position >= count) {
+            push_back(value);
+            return;
         }
-        return *this;
+
+        Node* current = head;
+        for (int i = 0; i < position; ++i)
+            current = current->next;
+
+        Node* newNode = new Node(value);
+        newNode->prev = current->prev;
+        newNode->next = current;
+        current->prev->next = newNode;
+        current->prev = newNode;
+        count++;
     }
 
-    ~String() {
-        delete[] str;
+    // 6
+    void erase(int position) {
+        if (position < 0 || position >= count) return;
+
+        Node* current = head;
+        for (int i = 0; i < position; ++i)
+            current = current->next;
+
+        if (current->prev) current->prev->next = current->next;
+        else head = current->next;
+
+        if (current->next) current->next->prev = current->prev;
+        else tail = current->prev;
+
+        delete current;
+        count--;
     }
 
-    int getLength() {
-        return length;
-    }
-
-    char* getStr() {
-        return str;
-    }
-
-    const char* c_str() {
-        return str;
-    }
-
-    char& operator[](int index) {
-        return str[index];
-    }
-
-    const char& operator[](int index) const {
-        return str[index];
-    }
-
-    friend String operator+(const String& a, const String& b);
-
-    bool empty() {
-        return length == 0;
-    }
-
-    String substr(int start, int end) {
-        if (start < 0) start = 0;
-        if (end > length) end = length;
-        if (start >= end) return String("");
-
-        int newLen = end - start;
-        char* buffer = new char[newLen + 1];
-        for (int i = 0; i < newLen; i++) {
-            buffer[i] = str[start + i];
+    // 7
+    int find(int value) {
+        Node* current = head;
+        int index = 0;
+        while (current) {
+            if (current->value == value)
+                return index;
+            current = current->next;
+            index++;
         }
-        buffer[newLen] = '\0';
-        String temp(buffer);
-        delete[] buffer;
-        return temp;
+        return -1; // Якщо не знайдено
     }
 
-    void replace(int start, int count, const char* newStr) {
-        if (start < 0 || start >= length) return;
-
-        int newStrLen = strlen(newStr);
-        if (start + count > length) count = length - start;
-
-        int newLength = length - count + newStrLen;
-        char* buffer = new char[newLength + 1];
-
-        strncpy(buffer, str, start);
-        buffer[start] = '\0';
-        strcat(buffer, newStr);
-        strcat(buffer, str + start + count);
-
-        delete[] str;
-        str = buffer;
-        length = newLength;
+    // 8
+    void clear() {
+        while (head) {
+            pop_front();
+        }
     }
 
-    void insert(int index, const char* newStr) {
-        if (index < 0) index = 0;
-        if (index > length) index = length;
+    // 9
+    int size() const {
+        return count;
+    }
 
-        int newStrLen = strlen(newStr);
-        int newLength = length + newStrLen;
-        char* buffer = new char[newLength + 1];
+    // 10
+    bool empty() const {
+        return count == 0;
+    }
 
-        strncpy(buffer, str, index);
-        buffer[index] = '\0';
+    // 11
+    void print_forward() const {
+        Node* current = head;
+        while (current) {
+            cout << current->value << " ";
+            current = current->next;
+        }
+        cout << endl;
+    }
 
-        strcat(buffer, newStr);
-        strcat(buffer, str + index);
-
-        delete[] str;
-        str = buffer;
-        length = newLength;
+    // 12
+    void print_backward() const {
+        Node* current = tail;
+        while (current) {
+            cout << current->value << " ";
+            current = current->prev;
+        }
+        cout << endl;
     }
 };
 
-String operator+(const String& a, const String& b) {
-    int newLength = a.length + b.length;
-    char* buffer = new char[newLength + 1];
-
-    strcpy(buffer, a.str);
-    strcat(buffer, b.str);
-
-    String temp(buffer);
-    delete[] buffer;
-    return temp;
-}
-
 int main() {
-    String s1("Hello");
-    String s2(" World");
+    DoublyLinkedList list;
 
-    cout << "s1: " << s1.getStr() << endl;
-    cout << "s2: " << s2.c_str() << endl;
+    list.push_back(10);
+    list.push_back(20);
+    list.push_back(30);
+    list.push_front(5);
+    list.insert(2, 15);
 
-    String s3 = s1 + s2;
-    cout << "s1 + s2 = " << s3.getStr() << endl;
+    cout << "Вперед: ";
+    list.print_forward();
 
-    //empty()
-    cout << "s1 empty? " << (s1.empty() ? "True" : "False") << endl;
+    cout << "Назад: ";
+    list.print_backward();
 
-    //substr()
-    String part = s3.substr(0, 5);
-    cout << "substr(0, 5): " << part.getStr() << endl;
+    cout << "Знайти 20: позиція - " << list.find(20) << endl;
 
-    //replace()
-    s3.replace(6, 5, "Universe");
-    cout << "After replace: " << s3.getStr() << endl;
+    list.erase(2);
+    cout << "Після видалення позиції 2: ";
+    list.print_forward();
 
-    //insert()
-    s3.insert(5, ",");
-    cout << "After insert: " << s3.getStr() << endl;
+    cout << "Розмір списку: " << list.size() << endl;
+    cout << "Порожній?: " << (list.empty() ? "Так" : "Ні") << endl;
+
+    list.clear();
+    cout << "Після очищення — порожній?: " << (list.empty() ? "Так" : "Ні") << endl;
 
     return 0;
 }
