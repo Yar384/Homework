@@ -1,144 +1,85 @@
 #include <iostream>
+#include <cstring>
 using namespace std;
 
-//Вузол
-struct Node {
-    int data;
-    Node* next;
-
-    Node(int d) : data(d), next(nullptr) {}
-};
-
-//Stack
-class Stack {
+class String {
 private:
-    Node* top; //вершина
+    char* str;
 
 public:
-    Stack() : top(nullptr) {}
-
-    ~Stack() {
-        while (!isEmpty()) pop();
+    String(const char* s = "") {
+        str = new char[strlen(s) + 1];
+        strcpy(str, s);
     }
 
-    //(push)
-    void push(int value) {
-        Node* newNode = new Node(value);
-        newNode->next = top;
-        top = newNode;
+    ~String() {
+        delete[] str;
     }
 
-    //(pop)
-    void pop() {
-        if (isEmpty()) {
-            cout << "Stack is empty!\n";
-            return;
-        }
-        Node* temp = top;
-        top = top->next;
-        delete temp;
+    const char* get() const {
+        return str;
     }
 
-    //(peek)
-    int peek() {
-        if (isEmpty()) {
-            cout << "Stack is empty!\n";
-            return -1;
-        }
-        return top->data;
+    void print() const {
+        cout << str;
+    }
+};
+
+//Наслідування
+class SmartString : public String {
+private:
+    int length;
+
+public:
+    SmartString(const char* s = "") : String(s) {
+        length = strlen(s);
     }
 
-    bool isEmpty() {
-        return top == nullptr;
+    void info() const {
+        cout << "String length: " << length << endl;
     }
+};
 
-    void print() {
-        Node* curr = top;
-        cout << "Stack: ";
-        while (curr) {
-            cout << curr->data << " ";
-            curr = curr->next;
-        }
+//Композиція
+class Document {
+private:
+    String content;
+
+public:
+    Document(const char* text) : content(text) {}
+
+    void show() const {
+        cout << "Document content: ";
+        content.print();
         cout << endl;
     }
 };
 
-//Queue
-class Queue {
+//Aагрегація
+class Notebook {
 private:
-    Node* front; //початок
-    Node* rear; //кінець
+    Document* doc;
 
 public:
-    Queue() : front(nullptr), rear(nullptr) {}
+    Notebook(Document* d) : doc(d) {}
 
-    ~Queue() {
-        while (!isEmpty()) dequeue();
-    }
-
-    void enqueue(int value) {
-        Node* newNode = new Node(value);
-        if (rear == nullptr) {
-            front = rear = newNode;
-        } else {
-            rear->next = newNode;
-            rear = newNode;
-        }
-    }
-
-    void dequeue() {
-        if (isEmpty()) {
-            cout << "Queue is empty!\n";
-            return;
-        }
-        Node* temp = front;
-        front = front->next;
-        if (front == nullptr)
-            rear = nullptr;
-        delete temp;
-    }
-
-    int peek() {
-        if (isEmpty()) {
-            cout << "Queue is empty!\n";
-            return -1;
-        }
-        return front->data;
-    }
-
-    bool isEmpty() {
-        return front == nullptr;
-    }
-
-    void print() {
-        Node* curr = front;
-        cout << "Queue: ";
-        while (curr) {
-            cout << curr->data << " ";
-            curr = curr->next;
-        }
-        cout << endl;
+    void open() const {
+        if (doc)
+            doc->show();
+        else
+            cout << "No document attached." << endl;
     }
 };
 
 int main() {
-    Stack st;
-    st.push(10);
-    st.push(20);
-    st.push(30);
-    st.print();
-    cout << "Top element: " << st.peek() << endl;
-    st.pop();
-    st.print();
+    SmartString s("Hello World");
+    s.info();
 
-    Queue q;
-    q.enqueue(1);
-    q.enqueue(2);
-    q.enqueue(3);
-    q.print();
-    cout << "Front element: " << q.peek() << endl;
-    q.dequeue();
-    q.print();
+    Document d("This is a composition example.");
+    d.show();
+
+    Notebook n(&d);
+    n.open();
 
     return 0;
 }
