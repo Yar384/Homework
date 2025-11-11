@@ -1,85 +1,111 @@
 #include <iostream>
-#include <cstring>
+#include <fstream>
 using namespace std;
 
-class String {
-private:
-    char* str;
-
+class Shape {
 public:
-    String(const char* s = "") {
-        str = new char[strlen(s) + 1];
-        strcpy(str, s);
+    virtual void Show() = 0;
+    virtual void Save(ofstream& file) = 0;
+    virtual void Load(ifstream& file) = 0;
+    virtual ~Shape() {}
+};
+
+class Square : public Shape {
+private:
+    double side;
+public:
+    Square(double s = 0) : side(s) {}
+
+    void Show() override {
+        cout << "Square, side = " << side << endl;
     }
 
-    ~String() {
-        delete[] str;
+    void Save(ofstream& file) override {
+        file << "Square " << side << endl;
     }
 
-    const char* get() const {
-        return str;
-    }
-
-    void print() const {
-        cout << str;
+    void Load(ifstream& file) override {
+        file >> side;
     }
 };
 
-//Наслідування
-class SmartString : public String {
+class Rectangle : public Shape {
 private:
-    int length;
-
+    double width, height;
 public:
-    SmartString(const char* s = "") : String(s) {
-        length = strlen(s);
+    Rectangle(double w = 0, double h = 0) : width(w), height(h) {}
+
+    void Show() override {
+        cout << "Rectangle, width = " << width << ", height = " << height << endl;
     }
 
-    void info() const {
-        cout << "String length: " << length << endl;
+    void Save(ofstream& file) override {
+        file << "Rectangle " << width << " " << height << endl;
     }
-};
 
-//Композиція
-class Document {
-private:
-    String content;
-
-public:
-    Document(const char* text) : content(text) {}
-
-    void show() const {
-        cout << "Document content: ";
-        content.print();
-        cout << endl;
+    void Load(ifstream& file) override {
+        file >> width >> height;
     }
 };
 
-//Aагрегація
-class Notebook {
+class Circle : public Shape {
 private:
-    Document* doc;
-
+    double radius;
 public:
-    Notebook(Document* d) : doc(d) {}
+    Circle(double r = 0) : radius(r) {}
 
-    void open() const {
-        if (doc)
-            doc->show();
-        else
-            cout << "No document attached." << endl;
+    void Show() override {
+        cout << "Circle, radius = " << radius << endl;
+    }
+
+    void Save(ofstream& file) override {
+        file << "Circle " << radius << endl;
+    }
+
+    void Load(ifstream& file) override {
+        file >> radius;
     }
 };
 
 int main() {
-    SmartString s("Hello World");
-    s.info();
+    Shape* shapes[3];
+    shapes[0] = new Square(5);
+    shapes[1] = new Rectangle(3, 6);
+    shapes[2] = new Circle(4);
 
-    Document d("This is a composition example.");
-    d.show();
+    ofstream out("shapes.txt");
+    for (int i = 0; i < 3; i++) {
+        shapes[i]->Save(out);
+    }
+    out.close();
 
-    Notebook n(&d);
-    n.open();
+    for (int i = 0; i < 3; i++) {
+        delete shapes[i];
+    }
+
+    Shape* loaded[3];
+    ifstream in("shapes.txt");
+    for (int i = 0; i < 3; i++) {
+        string type;
+        in >> type;
+        if (type == "Square") {
+            loaded[i] = new Square();
+        }
+        else if (type == "Rectangle") {
+            loaded[i] = new Rectangle();
+        }
+        else if (type == "Circle") {
+            loaded[i] = new Circle();
+        }
+        loaded[i]->Load(in);
+    }
+    in.close();
+
+    cout << "Loaded shapes:" << endl;
+    for (int i = 0; i < 3; i++) {
+        loaded[i]->Show();
+        delete loaded[i];
+    }
 
     return 0;
 }
