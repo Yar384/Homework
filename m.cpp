@@ -1,102 +1,151 @@
 #include <iostream>
+#include <vector>
 #include <string>
 using namespace std;
 
-class Pet {
-protected:
+class Student {
+private:
     string name;
-    string species;
-    string sound;
+    vector<int> grades;
 
 public:
-    Pet(const string& n, const string& s, const string& snd)
-        : name(n), species(s), sound(snd) {
+    Student() {}
+
+    Student(const string& name, const vector<int>& grades)
+        : name(name), grades(grades) {}
+
+    void print() const {
+        cout << "Name: " << name << "\nGrades: ";
+        for (int g : grades) cout << g << " ";
+        cout << "\n";
     }
 
-    virtual void info() const {
-        cout << "Name: " << name << endl;
-        cout << "Species: " << species << endl;
-        cout << "Sound: " << sound << endl;
-    }
-
-    virtual void makeSound() const {
-        cout << name << "Says: " << sound<< endl;
-    }
-
-    virtual ~Pet() {}
-};
-
-class Dog : public Pet {
-private:
-    string breed;
-
-public:
-    Dog(const string& name, const string& breed)
-        : Pet(name, "Dog", "Woof"), breed(breed) {
-    }
-
-    void info() const override {
-        cout << "Dog: " << name << endl;
-        cout << "Breed: " << breed << endl;
-        cout << "Sound: " << sound << endl;
-    }
-
-    void makeSound() const override {
-        cout << name << "Says: " << sound << endl;
+    string getName() const {
+        return name;
     }
 };
 
-class Cat : public Pet {
+class Group {
 private:
-    string color;
+    string groupName;
+    vector<Student> students;
 
 public:
-    Cat(const string& name, const string& color)
-        : Pet(name, "Cat", "Meow"), color(color) {
+    Group() {}
+    Group(const string& name) : groupName(name) {}
+
+void addStudent(const Student& s) {
+    students.push_back(s);
+        cout << "Student added!\n";
     }
 
-    void info() const override {
-        cout << "Cat: " << name << endl;
-        cout << "Color: " << color << endl;
-        cout << "Sound: " << sound << endl;
+    void removeStudent(const string& name) {
+        for (size_t i = 0; i < students.size(); i++) {
+            if (students[i].getName() == name) {
+                students.erase(students.begin() + i);
+                cout << "Student removed!\n";
+                return;
+            }
+        }
+        cout << "Student not found!\n";
     }
 
-    void makeSound() const override {
-        cout << name << "Says: " << sound << endl;
-    }
-};
+    void printStudents() const {
+        if (students.empty()) {
+            cout << "No students in the group.\n";
+            return;
+        }
 
-class Parrot : public Pet {
-private:
-    string favoriteWord;
+        cout << "\nGroup: " << groupName << "\n";
+        cout << "=====================\n";
 
-public:
-    Parrot(const string& name, const string& favoriteWord)
-        : Pet(name, "Parrot", "Squawk"), favoriteWord(favoriteWord) {
-    }
-
-    void info() const override {
-        cout << "Parrot: " << name << endl;
-        cout << "Favorite word: " << favoriteWord << endl;
-        cout << "Sound: " << sound << endl;
+        for (const auto& s : students) {
+            s.print();
+            cout << "------------------\n";
+        }
     }
 
-    void makeSound() const override {
-        cout << name << "Says: \"" << favoriteWord << "!\" And then squawks " << sound << endl;
+    bool isCreated() const {
+        return !groupName.empty();
     }
 };
 
 int main() {
-    Dog dog("Buddy", "Labrador");
-    Cat cat("Misty", "Gray");
-    Parrot parrot("Kiwi", "Hello");
+    Group group;
+    int choice;
 
-    Pet* pets[] = { &dog, &cat, &parrot };
+    while (true) {
+        cout << "\n=== MENU ===\n";
+        cout << "1. Create group\n";
+        cout << "2. Add student\n";
+        cout << "3. Remove student\n";
+        cout << "4. Show students\n";
+        cout << "0. Exit\n";
+        cout << "Choose: ";
+        cin >> choice;
 
-    for (Pet* p : pets) {
-        p->info();
-        p->makeSound();
-        cout << "---------------------------" << endl;
+        if (choice == 0) break;
+
+        switch (choice) {
+
+        case 1: {
+            string name;
+            cout << "Enter group name: ";
+            cin >> name;
+            group = Group(name);
+            cout << "Group created!\n";
+            break;
+        }
+
+        case 2: {
+            if (!group.isCreated()) {
+                cout << "Create a group first!\n";
+                break;
+            }
+
+            string name;
+            cout << "Enter student name: ";
+            cin >> name;
+
+            int gradeCount;
+            cout << "Number of grades: ";
+            cin >> gradeCount;
+
+            vector<int> grades(gradeCount);
+            for (int i = 0; i < gradeCount; i++) {
+                cout << "Grade " << i + 1 << ": ";
+                cin >> grades[i];
+            }
+
+            group.addStudent(Student(name, grades));
+            break;
+        }
+
+        case 3: {
+            if (!group.isCreated()) {
+                cout << "Create a group first!\n";
+                break;
+            }
+
+            string name;
+            cout << "Enter student name to remove: ";
+            cin >> name;
+            group.removeStudent(name);
+            break;
+        }
+
+        case 4: {
+            if (!group.isCreated()) {
+                cout << "Create a group first!\n";
+                break;
+            }
+            group.printStudents();
+            break;
+        }
+
+        default:
+            cout << "Invalid choice!\n";
+        }
     }
 
     return 0;
