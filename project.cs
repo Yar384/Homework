@@ -1,210 +1,207 @@
 using System;
+using System.Collections.Generic;
 
-class Program
+public class Book
 {
-    static void Main()
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public int Year { get; set; }
+
+    public Book(string title, string author, int year)
     {
-        while (true)
+        Title = title;
+        Author = author;
+        Year = year;
+    }
+
+    public override string ToString()
+    {
+        return $"{Title} ({Author}, {Year})";
+    }
+}
+
+public class BookList
+{
+    private List<Book> books = new List<Book>();
+
+    // Індексатор
+    public Book this[int index]
+    {
+        get
         {
-            Console.WriteLine("1 - Class website");
-            Console.WriteLine("2 - Class Magazine");
-            Console.WriteLine("3 - Class Store");
-            Console.WriteLine("0 - Exite");
-            Console.Write("Enter choice: ");
-
-            int choice = int.Parse(Console.ReadLine());
-            Console.WriteLine();
-
-            if (choice == 0)
-            {
-                break;
-            }
-
-            switch (choice)
-            {
-                case 1:
-                    WebsiteTest();
-                    break;
-                case 2:
-                    JournalTest();
-                    break;
-                case 3:
-                    ShopTest();
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice");
-                    break;
-            }
-
-            Console.WriteLine("\n Enter to continue");
-            Console.ReadLine();
-            Console.Clear();
+            if (index < 0 || index >= books.Count)
+                throw new IndexOutOfRangeException();
+            return books[index];
+        }
+        set
+        {
+            if (index < 0 || index >= books.Count)
+                throw new IndexOutOfRangeException();
+            books[index] = value;
         }
     }
 
-    static void WebsiteTest()
+    public void AddBook(Book book)
     {
-        Website site = new Website();
-        site.Input();
-        site.Print();
+        books.Add(book);
     }
 
-    static void JournalTest()
+    // Видалення книги
+    public void RemoveBook(Book book)
     {
-        Journal journal = new Journal();
-        journal.Input();
-        journal.Print();
+        books.Remove(book);
     }
 
-    static void ShopTest()
+    public bool ContainsBook(Book book)
     {
-        Shop shop = new Shop();
-        shop.Input();
-        shop.Print();
+        return books.Contains(book);
     }
+
+    // Виведення списку
+    public void DisplayList()
+    {
+        if (books.Count == 0)
+        {
+            Console.WriteLine("Список книг порожній");
+            return;
+        }
+
+        Console.WriteLine("Список книг:");
+        for (int i = 0; i < books.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {books[i]}");
+        }
+    }
+
+    public static BookList operator +(BookList list, Book book)
+    {
+        list.AddBook(book);
+        return list;
+    }
+
+    public static BookList operator -(BookList list, Book book)
+    {
+        list.RemoveBook(book);
+        return list;
+    }
+
+    public int Count => books.Count;
 }
 
-class Website
+public class Fraction
 {
-    private string name;
-    private string url;
-    private string description;
-    private string ip;
+    private int numerator;
+    private int denominator;
 
-    public void Input()
+    // Властивості з перевіркою
+    public int Numerator
     {
-        Console.Write("Name: ");
-        name = Console.ReadLine();
-
-        Console.Write("URL: ");
-        url = Console.ReadLine();
-
-        Console.Write("Description: ");
-        description = Console.ReadLine();
-
-        Console.Write("IP: ");
-        ip = Console.ReadLine();
+        get { return numerator; }
+        set { numerator = value; }
     }
 
-    public void Print()
+    public int Denominator
     {
-        Console.WriteLine($"Name: {name}");
-        Console.WriteLine($"URL: {url}");
-        Console.WriteLine($"Description: {description}");
-        Console.WriteLine($"IP: {ip}");
+        get { return denominator; }
+        set
+        {
+            if (value == 0)
+                throw new ArgumentException("Знаменник не може бути нулем");
+            denominator = value;
+        }
     }
 
-    public string GetName() { return name; }
-    public void SetName(string value) { name = value; }
-
-    public string GetUrl() { return url; }
-    public void SetUrl(string value) { url = value; }
-
-    public string GetDescription() { return description; }
-    public void SetDescription(string value) { description = value; }
-
-    public string GetIp() { return ip; }
-    public void SetIp(string value) { ip = value; }
-}
-
-class Journal
-{
-    private string name;
-    private int year;
-    private string description;
-    private string phone;
-    private string email;
-
-    public void Input()
+    public Fraction(int numerator, int denominator)
     {
-        Console.Write("Name: ");
-        name = Console.ReadLine();
-
-        Console.Write("Year: ");
-        year = int.Parse(Console.ReadLine());
-
-        Console.Write("Description: ");
-        description = Console.ReadLine();
-
-        Console.Write("Phine: ");
-        phone = Console.ReadLine();
-
-        Console.Write("Email: ");
-        email = Console.ReadLine();
+        Numerator = numerator;
+        Denominator = denominator;
+        Simplify();
     }
 
-    public void Print()
+    private int GCD(int a, int b)
     {
-        Console.WriteLine($"Name: {name}");
-        Console.WriteLine($"Year: {year}");
-        Console.WriteLine($"Description: {description}");
-        Console.WriteLine($"Phone: {phone}");
-        Console.WriteLine($"Email: {email}");
+        while (b != 0)
+        {
+            int temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return Math.Abs(a);
+    }
+    
+    public void Simplify()
+    {
+        int gcd = GCD(numerator, denominator);
+        numerator /= gcd;
+        denominator /= gcd;
+
+        if (denominator < 0)
+        {
+            numerator = -numerator;
+            denominator = -denominator;
+        }
     }
 
-    public string GetName() { return name; }
-    public void SetName(string value) { name = value; }
-
-    public int GetYear() { return year; }
-    public void SetYear(int value) { year = value; }
-
-    public string GetDescription() { return description; }
-    public void SetDescription(string value) { description = value; }
-
-    public string GetPhone() { return phone; }
-    public void SetPhone(string value) { phone = value; }
-
-    public string GetEmail() { return email; }
-    public void SetEmail(string value) { email = value; }
-}
-
-class Shop
-{
-    private string name;
-    private string address;
-    private string description;
-    private string phone;
-    private string email;
-
-    public void Input()
+    public static Fraction operator +(Fraction f1, Fraction f2)
     {
-        Console.Write("Name: ");
-        name = Console.ReadLine();
-
-        Console.Write("Address: ");
-        address = Console.ReadLine();
-
-        Console.Write("Description: ");
-        description = Console.ReadLine();
-
-        Console.Write("Phone: ");
-        phone = Console.ReadLine();
-
-        Console.Write("Email: ");
-        email = Console.ReadLine();
+        int newNum = f1.numerator * f2.denominator + f2.numerator * f1.denominator;
+        int newDen = f1.denominator * f2.denominator;
+        return new Fraction(newNum, newDen);
     }
 
-    public void Print()
+    public static Fraction operator -(Fraction f1, Fraction f2)
     {
-        Console.WriteLine($"Name: {name}");
-        Console.WriteLine($"Address: {address}");
-        Console.WriteLine($"Description: {description}");
-        Console.WriteLine($"Phone: {phone}");
-        Console.WriteLine($"Email: {email}");
+        int newNum = f1.numerator * f2.denominator - f2.numerator * f1.denominator;
+        int newDen = f1.denominator * f2.denominator;
+        return new Fraction(newNum, newDen);
     }
 
-    public string GetName() { return name; }
-    public void SetName(string value) { name = value; }
+    public static Fraction operator *(Fraction f1, Fraction f2)
+    {
+        int newNum = f1.numerator * f2.numerator;
+        int newDen = f1.denominator * f2.denominator;
+        return new Fraction(newNum, newDen);
+    }
 
-    public string GetAddress() { return address; }
-    public void SetAddress(string value) { address = value; }
+    public static Fraction operator /(Fraction f1, Fraction f2)
+    {
+        if (f2.numerator == 0)
+            throw new DivideByZeroException("Ділення на нульовий дріб");
 
-    public string GetDescription() { return description; }
-    public void SetDescription(string value) { description = value; }
+        int newNum = f1.numerator * f2.denominator;
+        int newDen = f1.denominator * f2.numerator;
+        return new Fraction(newNum, newDen);
+    }
 
-    public string GetPhone() { return phone; }
-    public void SetPhone(string value) { phone = value; }
+    public static bool operator ==(Fraction f1, Fraction f2)
+    {
+        if (ReferenceEquals(f1, f2)) return true;
+        if (f1 is null || f2 is null) return false;
 
-    public string GetEmail() { return email; }
-    public void SetEmail(string value) { email = value; }
+        f1.Simplify();
+        f2.Simplify();
+        return f1.numerator == f2.numerator && f1.denominator == f2.denominator;
+    }
+
+    public static bool operator !=(Fraction f1, Fraction f2)
+    {
+        return !(f1 == f2);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Fraction other)
+            return this == other;
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return (numerator, denominator).GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return $"{numerator}/{denominator}";
+    }
 }
