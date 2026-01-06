@@ -1,207 +1,186 @@
 using System;
-using System.Collections.Generic;
 
-public class Book
+namespace MusicAndCourses
 {
-    public string Title { get; set; }
-    public string Author { get; set; }
-    public int Year { get; set; }
-
-    public Book(string title, string author, int year)
+    class Program
     {
-        Title = title;
-        Author = author;
-        Year = year;
-    }
-
-    public override string ToString()
-    {
-        return $"{Title} ({Author}, {Year})";
-    }
-}
-
-public class BookList
-{
-    private List<Book> books = new List<Book>();
-
-    // Індексатор
-    public Book this[int index]
-    {
-        get
+        static void Main(string[] args)
         {
-            if (index < 0 || index >= books.Count)
-                throw new IndexOutOfRangeException();
-            return books[index];
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            
+            //1          
+            Violin violin = new Violin("Скрипка", "Струнний інструмент");
+            Trombone trombone = new Trombone("Тромбон", "Духовий інструмент");
+            Ukulele ukulele = new Ukulele("Укулеле", "Струнний щипковий інструмент");
+            Cello cello = new Cello("Віолончель", "Струнний смичковий інструмент");
+            
+            violin.Show();
+            violin.Desc();
+            violin.Sound();
+            violin.History();
+            Console.WriteLine();
+            
+            trombone.Show();
+            trombone.Desc();
+            trombone.Sound();
+            trombone.History();
+            Console.WriteLine();
+            
+            ukulele.Show();
+            ukulele.Desc();
+            ukulele.Sound();
+            ukulele.History();
+            Console.WriteLine();
+            
+            cello.Show();
+            cello.Desc();
+            cello.Sound();
+            cello.History();
+            Console.WriteLine();
+            
+            //2          
+            Course course1 = new Course("Основи програмування", 40);
+            OnlineCourse course2 = new OnlineCourse("Веб-розробка", 60, "Coursera");
+            
+            Console.WriteLine(course1.ToString());
+            Console.WriteLine(course2.ToString());
+            
+            Console.ReadLine();
         }
-        set
-        {
-            if (index < 0 || index >= books.Count)
-                throw new IndexOutOfRangeException();
-            books[index] = value;
-        }
-    }
-
-    public void AddBook(Book book)
-    {
-        books.Add(book);
-    }
-
-    // Видалення книги
-    public void RemoveBook(Book book)
-    {
-        books.Remove(book);
-    }
-
-    public bool ContainsBook(Book book)
-    {
-        return books.Contains(book);
-    }
-
-    // Виведення списку
-    public void DisplayList()
-    {
-        if (books.Count == 0)
-        {
-            Console.WriteLine("Список книг порожній");
-            return;
-        }
-
-        Console.WriteLine("Список книг:");
-        for (int i = 0; i < books.Count; i++)
-        {
-            Console.WriteLine($"{i + 1}. {books[i]}");
-        }
-    }
-
-    public static BookList operator +(BookList list, Book book)
-    {
-        list.AddBook(book);
-        return list;
-    }
-
-    public static BookList operator -(BookList list, Book book)
-    {
-        list.RemoveBook(book);
-        return list;
-    }
-
-    public int Count => books.Count;
-}
-
-public class Fraction
-{
-    private int numerator;
-    private int denominator;
-
-    // Властивості з перевіркою
-    public int Numerator
-    {
-        get { return numerator; }
-        set { numerator = value; }
-    }
-
-    public int Denominator
-    {
-        get { return denominator; }
-        set
-        {
-            if (value == 0)
-                throw new ArgumentException("Знаменник не може бути нулем");
-            denominator = value;
-        }
-    }
-
-    public Fraction(int numerator, int denominator)
-    {
-        Numerator = numerator;
-        Denominator = denominator;
-        Simplify();
-    }
-
-    private int GCD(int a, int b)
-    {
-        while (b != 0)
-        {
-            int temp = b;
-            b = a % b;
-            a = temp;
-        }
-        return Math.Abs(a);
     }
     
-    public void Simplify()
+    //для завдання 1
+    class MusicalInstrument
     {
-        int gcd = GCD(numerator, denominator);
-        numerator /= gcd;
-        denominator /= gcd;
-
-        if (denominator < 0)
+        public string Name;
+        public string Characteristics;
+        
+        public MusicalInstrument(string name, string characteristics)
         {
-            numerator = -numerator;
-            denominator = -denominator;
+            Name = name;
+            Characteristics = characteristics;
+        }
+        
+        public virtual void Sound()
+        {
+            Console.WriteLine("Інструмент видає звук");
+        }
+        
+        public void Show()
+        {
+            Console.WriteLine("Назва: " + Name);
+        }
+        
+        public void Desc()
+        {
+            Console.WriteLine("Опис: " + Characteristics);
+        }
+        
+        public virtual void History()
+        {
+            Console.WriteLine("Історія інструмента");
         }
     }
-
-    public static Fraction operator +(Fraction f1, Fraction f2)
+    
+    class Violin : MusicalInstrument
     {
-        int newNum = f1.numerator * f2.denominator + f2.numerator * f1.denominator;
-        int newDen = f1.denominator * f2.denominator;
-        return new Fraction(newNum, newDen);
+        public Violin(string name, string characteristics) : base(name, characteristics)
+        {
+        }
+        
+        public override void Sound()
+        {
+            Console.WriteLine("Звук: Іі-іі-іі (ніжний звук скрипки)");
+        }
+        
+        public override void History()
+        {
+            Console.WriteLine("Історія: Скрипка з'явилася в Італії в 16 столітті");
+        }
     }
-
-    public static Fraction operator -(Fraction f1, Fraction f2)
+    
+    class Trombone : MusicalInstrument
     {
-        int newNum = f1.numerator * f2.denominator - f2.numerator * f1.denominator;
-        int newDen = f1.denominator * f2.denominator;
-        return new Fraction(newNum, newDen);
+        public Trombone(string name, string characteristics) : base(name, characteristics)
+        {
+        }
+        
+        public override void Sound()
+        {
+            Console.WriteLine("Звук: У-у-у-вааа (потужний звук тромбона)");
+        }
+        
+        public override void History()
+        {
+            Console.WriteLine("Історія: Тромбон виник у 15 столітті в Європі");
+        }
     }
-
-    public static Fraction operator *(Fraction f1, Fraction f2)
+    
+    class Ukulele : MusicalInstrument
     {
-        int newNum = f1.numerator * f2.numerator;
-        int newDen = f1.denominator * f2.denominator;
-        return new Fraction(newNum, newDen);
+        public Ukulele(string name, string characteristics) : base(name, characteristics)
+        {
+        }
+        
+        public override void Sound()
+        {
+            Console.WriteLine("Звук: Дзінь-дзінь-дзінь (веселий звук укулеле)");
+        }
+        
+        public override void History()
+        {
+            Console.WriteLine("Історія: Укулеле створено на Гаваях у 19 столітті");
+        }
     }
-
-    public static Fraction operator /(Fraction f1, Fraction f2)
+    
+    class Cello : MusicalInstrument
     {
-        if (f2.numerator == 0)
-            throw new DivideByZeroException("Ділення на нульовий дріб");
-
-        int newNum = f1.numerator * f2.denominator;
-        int newDen = f1.denominator * f2.numerator;
-        return new Fraction(newNum, newDen);
+        public Cello(string name, string characteristics) : base(name, characteristics)
+        {
+        }
+        
+        public override void Sound()
+        {
+            Console.WriteLine("Звук: О-о-о-оо (глибокий звук віолончелі)");
+        }
+        
+        public override void History()
+        {
+            Console.WriteLine("Історія: Віолончель з'явилася в 16 столітті в Італії");
+        }
     }
-
-    public static bool operator ==(Fraction f1, Fraction f2)
+    
+    //для завдання 2
+    class Course
     {
-        if (ReferenceEquals(f1, f2)) return true;
-        if (f1 is null || f2 is null) return false;
-
-        f1.Simplify();
-        f2.Simplify();
-        return f1.numerator == f2.numerator && f1.denominator == f2.denominator;
+        public string Name;
+        public int Duration;
+        
+        public Course(string name, int duration)
+        {
+            Name = name;
+            Duration = duration;
+        }
+        
+        public override string ToString()
+        {
+            return "Курс: " + Name + ", Тривалість: " + Duration + " годин";
+        }
     }
-
-    public static bool operator !=(Fraction f1, Fraction f2)
+    
+    class OnlineCourse : Course
     {
-        return !(f1 == f2);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is Fraction other)
-            return this == other;
-        return false;
-    }
-
-    public override int GetHashCode()
-    {
-        return (numerator, denominator).GetHashCode();
-    }
-
-    public override string ToString()
-    {
-        return $"{numerator}/{denominator}";
+        public string Platform;
+        
+        public OnlineCourse(string name, int duration, string platform) : base(name, duration)
+        {
+            Platform = platform;
+        }
+        
+        public override string ToString()
+        {
+            return "Онлайн курс: " + Name + ", Тривалість: " + Duration + " годин, Платформа: " + Platform;
+        }
     }
 }
+
