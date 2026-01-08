@@ -1,6 +1,6 @@
 using System;
 
-namespace MusicAndCourses
+namespace InterfacesProgram
 {
     class Program
     {
@@ -8,179 +8,234 @@ namespace MusicAndCourses
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             
-            //1          
-            Violin violin = new Violin("Скрипка", "Струнний інструмент");
-            Trombone trombone = new Trombone("Тромбон", "Духовий інструмент");
-            Ukulele ukulele = new Ukulele("Укулеле", "Струнний щипковий інструмент");
-            Cello cello = new Cello("Віолончель", "Струнний смичковий інструмент");
+            //1
+            Console.WriteLine("=== Завдання 1 ===\n");
             
-            violin.Show();
-            violin.Desc();
-            violin.Sound();
-            violin.History();
-            Console.WriteLine();
+            IRemoteControl tvRemote = new TvRemoteControl();
+            IRemoteControl radioRemote = new RadioRemoteControl();
             
-            trombone.Show();
-            trombone.Desc();
-            trombone.Sound();
-            trombone.History();
-            Console.WriteLine();
+            Console.WriteLine("--- Керування телевізором ---");
+            tvRemote.TurnOn();
+            tvRemote.SetChannel(5);
+            tvRemote.SetChannel(12);
+            tvRemote.TurnOff();
+
+            Console.WriteLine("\n--- Керування радіо ---");
+            radioRemote.TurnOn();
+            radioRemote.SetChannel(101);
+            radioRemote.SetChannel(95);
+            radioRemote.TurnOff();
+
+            //2
+            Console.WriteLine("\n\n=== Завдання 2 ===\n");
+
+            IValidator emailValidator = new EmailValidator();
+            IValidator passwordValidator = new PasswordValidator();
+
+            Console.WriteLine("--- Перевірка email ---");
+            string email1 = "test@gmail.com";
+            string email2 = "wrongemail";
+
+            Console.WriteLine("Email: " + email1);
+            if (emailValidator.Validate(email1))
+            {
+                Console.WriteLine("Email коректний");
+            }
+            else
+            {
+                Console.WriteLine("Email некоректний");
+            }
             
-            ukulele.Show();
-            ukulele.Desc();
-            ukulele.Sound();
-            ukulele.History();
-            Console.WriteLine();
+            Console.WriteLine("\nEmail: " + email2);
+            if (emailValidator.Validate(email2))
+            {
+                Console.WriteLine("Email коректний");
+            }
+            else
+            {
+                Console.WriteLine("Email некоректний");
+            }
+
+            Console.WriteLine("\n--- Перевірка паролю ---");
+            string password1 = "MyPass123";
+            string password2 = "123";
+
+            Console.WriteLine("Пароль: " + password1);
+            if (passwordValidator.Validate(password1))
+            {
+                Console.WriteLine("Пароль коректний");
+            }
+            else
+            {
+                Console.WriteLine("Пароль некоректний");
+            }
             
-            cello.Show();
-            cello.Desc();
-            cello.Sound();
-            cello.History();
-            Console.WriteLine();
-            
-            //2          
-            Course course1 = new Course("Основи програмування", 40);
-            OnlineCourse course2 = new OnlineCourse("Веб-розробка", 60, "Coursera");
-            
-            Console.WriteLine(course1.ToString());
-            Console.WriteLine(course2.ToString());
+            Console.WriteLine("\nПароль: " + password2);
+            if (passwordValidator.Validate(password2))
+            {
+                Console.WriteLine("Пароль коректний");
+            }
+            else
+            {
+                Console.WriteLine("Пароль некоректний");
+            }
             
             Console.ReadLine();
         }
     }
-    
-    //для завдання 1
-    class MusicalInstrument
+
+    // Завдання 1
+    interface IRemoteControl
     {
-        public string Name;
-        public string Characteristics;
+        void TurnOn();
+        void TurnOff();
+        void SetChannel(int channel);
+    }
+
+    class TvRemoteControl : IRemoteControl
+    {
+        private bool isOn = false;
+        private int currentChannel = 1;
         
-        public MusicalInstrument(string name, string characteristics)
+        public void TurnOn()
         {
-            Name = name;
-            Characteristics = characteristics;
+            isOn = true;
+            Console.WriteLine("Телевізор увімкнено");
         }
         
-        public virtual void Sound()
+        public void TurnOff()
         {
-            Console.WriteLine("Інструмент видає звук");
+            isOn = false;
+            Console.WriteLine("Телевізор вимкнено");
         }
         
-        public void Show()
+        public void SetChannel(int channel)
         {
-            Console.WriteLine("Назва: " + Name);
-        }
-        
-        public void Desc()
-        {
-            Console.WriteLine("Опис: " + Characteristics);
-        }
-        
-        public virtual void History()
-        {
-            Console.WriteLine("Історія інструмента");
+            if (isOn)
+            {
+                currentChannel = channel;
+                Console.WriteLine("Переключено на канал: " + channel);
+            }
+            else
+            {
+                Console.WriteLine("Телевізор вимкнений. Спочатку увімкніть його.");
+            }
         }
     }
     
-    class Violin : MusicalInstrument
+    class RadioRemoteControl : IRemoteControl
     {
-        public Violin(string name, string characteristics) : base(name, characteristics)
+        private bool isOn = false;
+        private int currentChannel = 100;
+        
+        public void TurnOn()
         {
+            isOn = true;
+            Console.WriteLine("Радіо увімкнено");
         }
         
-        public override void Sound()
+        public void TurnOff()
         {
-            Console.WriteLine("Звук: Іі-іі-іі (ніжний звук скрипки)");
+            isOn = false;
+            Console.WriteLine("Радіо вимкнено");
         }
         
-        public override void History()
+        public void SetChannel(int channel)
         {
-            Console.WriteLine("Історія: Скрипка з'явилася в Італії в 16 столітті");
+            if (isOn)
+            {
+                currentChannel = channel;
+                Console.WriteLine("Переключено на частоту: " + channel + " FM");
+            }
+            else
+            {
+                Console.WriteLine("Радіо вимкнене. Спочатку увімкніть його.");
+            }
         }
     }
     
-    class Trombone : MusicalInstrument
+    // Завдання 2
+    interface IValidator
     {
-        public Trombone(string name, string characteristics) : base(name, characteristics)
+        bool Validate(string data);
+    }
+    
+    class EmailValidator : IValidator
+    {
+        public bool Validate(string data)
         {
-        }
-        
-        public override void Sound()
-        {
-            Console.WriteLine("Звук: У-у-у-вааа (потужний звук тромбона)");
-        }
-        
-        public override void History()
-        {
-            Console.WriteLine("Історія: Тромбон виник у 15 столітті в Європі");
+            if (string.IsNullOrEmpty(data))
+            {
+                return false;
+            }
+            
+            if (!data.Contains("@"))
+            {
+                return false;
+            }
+            
+            if (!data.Contains("."))
+            {
+                return false;
+            }
+            
+            int atIndex = data.IndexOf("@");
+            int dotIndex = data.LastIndexOf(".");
+            
+            if (atIndex > dotIndex)
+            {
+                return false;
+            }
+            
+            if (atIndex == 0)
+            {
+                return false;
+            }
+            
+            if (dotIndex == data.Length - 1)
+            {
+                return false;
+            }
+            
+            return true;
         }
     }
     
-    class Ukulele : MusicalInstrument
+    class PasswordValidator : IValidator
     {
-        public Ukulele(string name, string characteristics) : base(name, characteristics)
+        public bool Validate(string data)
         {
-        }
-        
-        public override void Sound()
-        {
-            Console.WriteLine("Звук: Дзінь-дзінь-дзінь (веселий звук укулеле)");
-        }
-        
-        public override void History()
-        {
-            Console.WriteLine("Історія: Укулеле створено на Гаваях у 19 столітті");
-        }
-    }
-    
-    class Cello : MusicalInstrument
-    {
-        public Cello(string name, string characteristics) : base(name, characteristics)
-        {
-        }
-        
-        public override void Sound()
-        {
-            Console.WriteLine("Звук: О-о-о-оо (глибокий звук віолончелі)");
-        }
-        
-        public override void History()
-        {
-            Console.WriteLine("Історія: Віолончель з'явилася в 16 столітті в Італії");
-        }
-    }
-    
-    //для завдання 2
-    class Course
-    {
-        public string Name;
-        public int Duration;
-        
-        public Course(string name, int duration)
-        {
-            Name = name;
-            Duration = duration;
-        }
-        
-        public override string ToString()
-        {
-            return "Курс: " + Name + ", Тривалість: " + Duration + " годин";
-        }
-    }
-    
-    class OnlineCourse : Course
-    {
-        public string Platform;
-        
-        public OnlineCourse(string name, int duration, string platform) : base(name, duration)
-        {
-            Platform = platform;
-        }
-        
-        public override string ToString()
-        {
-            return "Онлайн курс: " + Name + ", Тривалість: " + Duration + " годин, Платформа: " + Platform;
+            if (string.IsNullOrEmpty(data))
+            {
+                return false;
+            }
+            
+            if (data.Length < 6)
+            {
+                return false;
+            }
+            
+            bool hasDigit = false;
+            bool hasLetter = false;
+            
+            foreach (char c in data)
+            {
+                if (char.IsDigit(c))
+                {
+                    hasDigit = true;
+                }
+                if (char.IsLetter(c))
+                {
+                    hasLetter = true;
+                }
+            }
+            
+            if (!hasDigit || !hasLetter)
+            {
+                return false;
+            }
+            
+            return true;
         }
     }
 }
-
