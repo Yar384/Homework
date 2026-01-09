@@ -1,6 +1,6 @@
 using System;
 
-namespace InterfacesProgram
+namespace DelegatesAndEventsProgram
 {
     class Program
     {
@@ -9,233 +9,231 @@ namespace InterfacesProgram
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             
             //1
-            Console.WriteLine("=== Завдання 1 ===\n");
+            Action showTime = () =>
+            {
+                Console.WriteLine("Поточний час: " + DateTime.Now.ToString("HH:mm:ss"));
+            };
+
+            Action showDate = () =>
+            {
+                Console.WriteLine("Поточна дата: " + DateTime.Now.ToString("dd.MM.yyyy"));
+            };
             
-            IRemoteControl tvRemote = new TvRemoteControl();
-            IRemoteControl radioRemote = new RadioRemoteControl();
+            Action showDayOfWeek = () =>
+            {
+                string day = "";
+                switch (DateTime.Now.DayOfWeek)
+                {
+                    case DayOfWeek.Monday: day = "Понеділок"; break;
+                    case DayOfWeek.Tuesday: day = "Вівторок"; break;
+                    case DayOfWeek.Wednesday: day = "Середа"; break;
+                    case DayOfWeek.Thursday: day = "Четвер"; break;
+                    case DayOfWeek.Friday: day = "П'ятниця"; break;
+                    case DayOfWeek.Saturday: day = "Субота"; break;
+                    case DayOfWeek.Sunday: day = "Неділя"; break;
+                }
+                Console.WriteLine("День тижня: " + day);
+            };
+
+            Func<double, double, double> triangleArea = (baseLength, height) =>
+            {
+                return (baseLength * height) / 2;
+            };
             
-            Console.WriteLine("--- Керування телевізором ---");
-            tvRemote.TurnOn();
-            tvRemote.SetChannel(5);
-            tvRemote.SetChannel(12);
-            tvRemote.TurnOff();
-
-            Console.WriteLine("\n--- Керування радіо ---");
-            radioRemote.TurnOn();
-            radioRemote.SetChannel(101);
-            radioRemote.SetChannel(95);
-            radioRemote.TurnOff();
-
-            //2
-            Console.WriteLine("\n\n=== Завдання 2 ===\n");
-
-            IValidator emailValidator = new EmailValidator();
-            IValidator passwordValidator = new PasswordValidator();
-
-            Console.WriteLine("--- Перевірка email ---");
-            string email1 = "test@gmail.com";
-            string email2 = "wrongemail";
-
-            Console.WriteLine("Email: " + email1);
-            if (emailValidator.Validate(email1))
+            Func<double, double, double> rectangleArea = (width, height) =>
             {
-                Console.WriteLine("Email коректний");
-            }
-            else
-            {
-                Console.WriteLine("Email некоректний");
-            }
+                return width * height;
+            };
             
-            Console.WriteLine("\nEmail: " + email2);
-            if (emailValidator.Validate(email2))
-            {
-                Console.WriteLine("Email коректний");
-            }
-            else
-            {
-                Console.WriteLine("Email некоректний");
-            }
-
-            Console.WriteLine("\n--- Перевірка паролю ---");
-            string password1 = "MyPass123";
-            string password2 = "123";
-
-            Console.WriteLine("Пароль: " + password1);
-            if (passwordValidator.Validate(password1))
-            {
-                Console.WriteLine("Пароль коректний");
-            }
-            else
-            {
-                Console.WriteLine("Пароль некоректний");
-            }
+            showTime();
+            showDate();
+            showDayOfWeek();
             
-            Console.WriteLine("\nПароль: " + password2);
-            if (passwordValidator.Validate(password2))
+            Console.WriteLine("\nПлоща трикутника (основа=10, висота=5): " + triangleArea(10, 5));
+            Console.WriteLine("Площа прямокутника (ширина=8, висота=6): " + rectangleArea(8, 6));
+            
+            //2            
+            CreditCard card = new CreditCard("1234-5678-9012-3456", "Іванов Іван Іванович", 
+                                             new DateTime(2027, 12, 31), "1234", 10000, 5000);
+            
+            card.MoneyAdded += (amount) =>
             {
-                Console.WriteLine("Пароль коректний");
-            }
-            else
+                Console.WriteLine($"[Подія] Рахунок поповнено на {amount} грн");
+            };
+
+            card.MoneySpent += (amount) =>
             {
-                Console.WriteLine("Пароль некоректний");
-            }
+                Console.WriteLine($"[Подія] Витрачено {amount} грн");
+            };
+            
+            card.CreditStarted += () =>
+            {
+                Console.WriteLine("[Подія] Почалося використання кредитних коштів!");
+            };
+            
+            card.TargetAmountReached += (target) =>
+            {
+                Console.WriteLine($"[Подія] Досягнуто цільової суми {target} грн!");
+            };
+            
+            card.PinChanged += () =>
+            {
+                Console.WriteLine("[Подія] PIN-код змінено!");
+            };
+            
+            card.ShowInfo();
+
+            Console.WriteLine("\n--- Операції ---");
+            card.AddMoney(2000);
+            card.ShowBalance();
+            
+            card.SpendMoney(3000);
+            card.ShowBalance();
+            
+            card.SetTargetAmount(8000);
+            card.AddMoney(1500);
+            card.ShowBalance();
+            
+            card.SpendMoney(6000);
+            card.ShowBalance();
+            
+            card.ChangePin("1234", "5678");
             
             Console.ReadLine();
         }
     }
+    
+    //2
+    class CreditCard
+    {
+        private string cardNumber;
+        private string ownerName;
+        private DateTime expirationDate;
+        private string pin;
+        private double creditLimit;
+        private double balance;
+        private double targetAmount = 0;
+        private bool isUsingCredit = false;
+        
+        public event Action<double> MoneyAdded;
+        public event Action<double> MoneySpent;
+        public event Action CreditStarted;
+        public event Action<double> TargetAmountReached;
+        public event Action PinChanged;
 
-    // Завдання 1
-    interface IRemoteControl
-    {
-        void TurnOn();
-        void TurnOff();
-        void SetChannel(int channel);
-    }
+        public CreditCard(string cardNumber, string ownerName, DateTime expirationDate, 
+                          string pin, double creditLimit, double balance)
+        {
+            this.cardNumber = cardNumber;
+            this.ownerName = ownerName;
+            this.expirationDate = expirationDate;
+            this.pin = pin;
+            this.creditLimit = creditLimit;
+            this.balance = balance;
+        }
 
-    class TvRemoteControl : IRemoteControl
-    {
-        private bool isOn = false;
-        private int currentChannel = 1;
-        
-        public void TurnOn()
+        public void ShowInfo()
         {
-            isOn = true;
-            Console.WriteLine("Телевізор увімкнено");
+            Console.WriteLine("Номер картки: " + cardNumber);
+            Console.WriteLine("Власник: " + ownerName);
+            Console.WriteLine("Термін дії: " + expirationDate.ToString("MM/yyyy"));
+            Console.WriteLine("Кредитний ліміт: " + creditLimit + " грн");
+            Console.WriteLine("Баланс: " + balance + " грн");
+        }
+
+        public void ShowBalance()
+        {
+            Console.WriteLine("Поточний баланс: " + balance + " грн");
         }
         
-        public void TurnOff()
+        public void AddMoney(double amount)
         {
-            isOn = false;
-            Console.WriteLine("Телевізор вимкнено");
-        }
-        
-        public void SetChannel(int channel)
-        {
-            if (isOn)
+            if (amount <= 0)
             {
-                currentChannel = channel;
-                Console.WriteLine("Переключено на канал: " + channel);
-            }
-            else
-            {
-                Console.WriteLine("Телевізор вимкнений. Спочатку увімкніть його.");
-            }
-        }
-    }
-    
-    class RadioRemoteControl : IRemoteControl
-    {
-        private bool isOn = false;
-        private int currentChannel = 100;
-        
-        public void TurnOn()
-        {
-            isOn = true;
-            Console.WriteLine("Радіо увімкнено");
-        }
-        
-        public void TurnOff()
-        {
-            isOn = false;
-            Console.WriteLine("Радіо вимкнено");
-        }
-        
-        public void SetChannel(int channel)
-        {
-            if (isOn)
-            {
-                currentChannel = channel;
-                Console.WriteLine("Переключено на частоту: " + channel + " FM");
-            }
-            else
-            {
-                Console.WriteLine("Радіо вимкнене. Спочатку увімкніть його.");
-            }
-        }
-    }
-    
-    // Завдання 2
-    interface IValidator
-    {
-        bool Validate(string data);
-    }
-    
-    class EmailValidator : IValidator
-    {
-        public bool Validate(string data)
-        {
-            if (string.IsNullOrEmpty(data))
-            {
-                return false;
+                Console.WriteLine("Сума має бути більше 0");
+                return;
             }
             
-            if (!data.Contains("@"))
+            balance += amount;
+            
+            if (MoneyAdded != null)
             {
-                return false;
+                MoneyAdded(amount);
             }
-            
-            if (!data.Contains("."))
+
+            if (targetAmount > 0 && balance >= targetAmount)
             {
-                return false;
-            }
-            
-            int atIndex = data.IndexOf("@");
-            int dotIndex = data.LastIndexOf(".");
-            
-            if (atIndex > dotIndex)
-            {
-                return false;
-            }
-            
-            if (atIndex == 0)
-            {
-                return false;
-            }
-            
-            if (dotIndex == data.Length - 1)
-            {
-                return false;
-            }
-            
-            return true;
-        }
-    }
-    
-    class PasswordValidator : IValidator
-    {
-        public bool Validate(string data)
-        {
-            if (string.IsNullOrEmpty(data))
-            {
-                return false;
-            }
-            
-            if (data.Length < 6)
-            {
-                return false;
-            }
-            
-            bool hasDigit = false;
-            bool hasLetter = false;
-            
-            foreach (char c in data)
-            {
-                if (char.IsDigit(c))
+                if (TargetAmountReached != null)
                 {
-                    hasDigit = true;
+                    TargetAmountReached(targetAmount);
                 }
-                if (char.IsLetter(c))
+                targetAmount = 0;
+            }
+            
+            if (isUsingCredit && balance > 0)
+            {
+                isUsingCredit = false;
+            }
+        }
+        
+        public void SpendMoney(double amount)
+        {
+            if (amount <= 0)
+            {
+                Console.WriteLine("Сума має бути більше 0");
+                return;
+            }
+            
+            if (balance + creditLimit < amount)
+            {
+                Console.WriteLine("Недостатньо коштів. Ліміт перевищено");
+                return;
+            }
+
+            bool wasPositive = balance > 0;
+            balance -= amount;
+
+            if (MoneySpent != null)
+            {
+                MoneySpent(amount);
+            }
+            
+            if (wasPositive && balance < 0 && !isUsingCredit)
+            {
+                isUsingCredit = true;
+                if (CreditStarted != null)
                 {
-                    hasLetter = true;
+                    CreditStarted();
                 }
             }
-            
-            if (!hasDigit || !hasLetter)
+        }
+        
+        public void SetTargetAmount(double amount)
+        {
+            targetAmount = amount;
+            Console.WriteLine("Встановлено цільову суму: " + amount + " грн");
+        }
+        
+        public void ChangePin(string oldPin, string newPin)
+        {
+            if (oldPin != pin)
             {
-                return false;
+                Console.WriteLine("Неправильний старий PIN");
+                return;
             }
             
-            return true;
+            if (newPin.Length != 4)
+            {
+                Console.WriteLine("PIN має складатися з 4 цифр");
+                return;
+            }
+            
+            pin = newPin;
+            
+            if (PinChanged != null)
+            {
+                PinChanged();
+            }
         }
     }
 }
