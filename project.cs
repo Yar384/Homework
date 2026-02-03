@@ -31,7 +31,7 @@ namespace GarbageCollectorProgram
             GC.WaitForPendingFinalizers();
 
             //2
-            Console.WriteLine("--- Тест 1: Бібліотека з using ---");
+            Console.WriteLine("Бібліотека з using");
             using (Library library1 = new Library())
             {
                 library1.AddBook(new Book("Лісова пісня", "Леся Українка", 1911, 100));
@@ -39,24 +39,23 @@ namespace GarbageCollectorProgram
                 library1.ShowAllBooks();
             }
 
-            Console.WriteLine("\n--- Тест 2: Бібліотека без using ---");
+            Console.WriteLine("\nБібліотека без using");
             Library library2 = new Library();
             library2.AddBook(new Book("Intermezzo", "Михайло Коцюбинський", 1908, 120));
             library2.AddBook(new Book("Марія", "Уляна Кравченко", 1934, 200));
             library2.ShowAllBooks();
             library2.Dispose();
             
-            Console.WriteLine("\n--- Тест 3: Бібліотека без Dispose ---");
+            Console.WriteLine("\nБібліотека без Dispose");
             Library library3 = new Library();
             library3.AddBook(new Book("Земля", "Ольга Кобилянська", 1902, 180));
             library3.ShowAllBooks();
             library3 = null;
 
-            Console.WriteLine("\nВиклик збирача сміття...");
+            Console.WriteLine("\nВиклик збирача сміття");
             GC.Collect();
             GC.WaitForPendingFinalizers();
             
-            Console.WriteLine("\nПрограма завершена. Натисніть Enter...");
             Console.ReadLine();
         }
     }
@@ -124,7 +123,7 @@ namespace GarbageCollectorProgram
         
         public void ShowAllBooks()
         {
-            Console.WriteLine($"\n=== Книги в бібліотеці (всього: {books.Count}) ===");
+            Console.WriteLine($"\nКниги в бібліотеці (всього: {books.Count})");
             
             if (books.Count == 0)
             {
@@ -144,7 +143,7 @@ namespace GarbageCollectorProgram
             if (!disposed)
             {
                 Console.WriteLine("\nDispose викликано для бібліотеки");
-                Console.WriteLine("Очищення ресурсів бібліотеки...");
+                Console.WriteLine("Очищення ресурсів бібліотеки");
                 
                 if (books != null)
                 {
