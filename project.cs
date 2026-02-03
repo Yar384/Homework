@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 
-namespace DelegatesAndEventsProgram
+namespace GarbageCollectorProgram
 {
     class Program
     {
@@ -9,231 +10,160 @@ namespace DelegatesAndEventsProgram
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             
             //1
-            Action showTime = () =>
-            {
-                Console.WriteLine("Поточний час: " + DateTime.Now.ToString("HH:mm:ss"));
-            };
+            Console.WriteLine("Створення без using");
+            Book book1 = new Book("Кобзар", "Тарас Шевченко", 1840, 200);
+            book1.ShowInfo();
+            book1.Dispose();
 
-            Action showDate = () =>
+            Console.WriteLine("\nСтворення з using");
+            using (Book book2 = new Book("Тіні забутих предків", "Михайло Коцюбинський", 1911, 150))
             {
-                Console.WriteLine("Поточна дата: " + DateTime.Now.ToString("dd.MM.yyyy"));
-            };
-            
-            Action showDayOfWeek = () =>
-            {
-                string day = "";
-                switch (DateTime.Now.DayOfWeek)
-                {
-                    case DayOfWeek.Monday: day = "Понеділок"; break;
-                    case DayOfWeek.Tuesday: day = "Вівторок"; break;
-                    case DayOfWeek.Wednesday: day = "Середа"; break;
-                    case DayOfWeek.Thursday: day = "Четвер"; break;
-                    case DayOfWeek.Friday: day = "П'ятниця"; break;
-                    case DayOfWeek.Saturday: day = "Субота"; break;
-                    case DayOfWeek.Sunday: day = "Неділя"; break;
-                }
-                Console.WriteLine("День тижня: " + day);
-            };
+                book2.ShowInfo();
+            }
 
-            Func<double, double, double> triangleArea = (baseLength, height) =>
-            {
-                return (baseLength * height) / 2;
-            };
+            Console.WriteLine("\nСтворення без виклику Dispose");
+            Book book3 = new Book("Захар Беркут", "Іван Франко", 1883, 180);
+            book3.ShowInfo();
+            book3 = null;
             
-            Func<double, double, double> rectangleArea = (width, height) =>
-            {
-                return width * height;
-            };
-            
-            showTime();
-            showDate();
-            showDayOfWeek();
-            
-            Console.WriteLine("\nПлоща трикутника (основа=10, висота=5): " + triangleArea(10, 5));
-            Console.WriteLine("Площа прямокутника (ширина=8, висота=6): " + rectangleArea(8, 6));
-            
-            //2            
-            CreditCard card = new CreditCard("1234-5678-9012-3456", "Іванов Іван Іванович", 
-                                             new DateTime(2027, 12, 31), "1234", 10000, 5000);
-            
-            card.MoneyAdded += (amount) =>
-            {
-                Console.WriteLine($"[Подія] Рахунок поповнено на {amount} грн");
-            };
+            Console.WriteLine("\nВиклик збирача сміття");
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
 
-            card.MoneySpent += (amount) =>
+            //2
+            Console.WriteLine("--- Тест 1: Бібліотека з using ---");
+            using (Library library1 = new Library())
             {
-                Console.WriteLine($"[Подія] Витрачено {amount} грн");
-            };
-            
-            card.CreditStarted += () =>
-            {
-                Console.WriteLine("[Подія] Почалося використання кредитних коштів!");
-            };
-            
-            card.TargetAmountReached += (target) =>
-            {
-                Console.WriteLine($"[Подія] Досягнуто цільової суми {target} грн!");
-            };
-            
-            card.PinChanged += () =>
-            {
-                Console.WriteLine("[Подія] PIN-код змінено!");
-            };
-            
-            card.ShowInfo();
+                library1.AddBook(new Book("Лісова пісня", "Леся Українка", 1911, 100));
+                library1.AddBook(new Book("Місто", "Валер'ян Підмогильний", 1928, 250));
+                library1.ShowAllBooks();
+            }
 
-            Console.WriteLine("\n--- Операції ---");
-            card.AddMoney(2000);
-            card.ShowBalance();
+            Console.WriteLine("\n--- Тест 2: Бібліотека без using ---");
+            Library library2 = new Library();
+            library2.AddBook(new Book("Intermezzo", "Михайло Коцюбинський", 1908, 120));
+            library2.AddBook(new Book("Марія", "Уляна Кравченко", 1934, 200));
+            library2.ShowAllBooks();
+            library2.Dispose();
             
-            card.SpendMoney(3000);
-            card.ShowBalance();
+            Console.WriteLine("\n--- Тест 3: Бібліотека без Dispose ---");
+            Library library3 = new Library();
+            library3.AddBook(new Book("Земля", "Ольга Кобилянська", 1902, 180));
+            library3.ShowAllBooks();
+            library3 = null;
+
+            Console.WriteLine("\nВиклик збирача сміття...");
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
             
-            card.SetTargetAmount(8000);
-            card.AddMoney(1500);
-            card.ShowBalance();
-            
-            card.SpendMoney(6000);
-            card.ShowBalance();
-            
-            card.ChangePin("1234", "5678");
-            
+            Console.WriteLine("\nПрограма завершена. Натисніть Enter...");
             Console.ReadLine();
         }
     }
-    
-    //2
-    class CreditCard
-    {
-        private string cardNumber;
-        private string ownerName;
-        private DateTime expirationDate;
-        private string pin;
-        private double creditLimit;
-        private double balance;
-        private double targetAmount = 0;
-        private bool isUsingCredit = false;
-        
-        public event Action<double> MoneyAdded;
-        public event Action<double> MoneySpent;
-        public event Action CreditStarted;
-        public event Action<double> TargetAmountReached;
-        public event Action PinChanged;
 
-        public CreditCard(string cardNumber, string ownerName, DateTime expirationDate, 
-                          string pin, double creditLimit, double balance)
+    //1
+    class Book : IDisposable
+    {
+        public string Title { get; set; }
+        public string Author { get; set; }
+        public int Year { get; set; }
+        public int Pages { get; set; }
+        
+        private bool disposed = false;
+        
+        public Book(string title, string author, int year, int pages)
         {
-            this.cardNumber = cardNumber;
-            this.ownerName = ownerName;
-            this.expirationDate = expirationDate;
-            this.pin = pin;
-            this.creditLimit = creditLimit;
-            this.balance = balance;
+            Title = title;
+            Author = author;
+            Year = year;
+            Pages = pages;
+            Console.WriteLine($"Книга '{Title}' створена");
         }
 
         public void ShowInfo()
         {
-            Console.WriteLine("Номер картки: " + cardNumber);
-            Console.WriteLine("Власник: " + ownerName);
-            Console.WriteLine("Термін дії: " + expirationDate.ToString("MM/yyyy"));
-            Console.WriteLine("Кредитний ліміт: " + creditLimit + " грн");
-            Console.WriteLine("Баланс: " + balance + " грн");
-        }
-
-        public void ShowBalance()
-        {
-            Console.WriteLine("Поточний баланс: " + balance + " грн");
+            Console.WriteLine($"\nНазва: {Title}");
+            Console.WriteLine($"Автор: {Author}");
+            Console.WriteLine($"Рік видання: {Year}");
+            Console.WriteLine($"Кількість сторінок: {Pages}");
         }
         
-        public void AddMoney(double amount)
+        public void Dispose()
         {
-            if (amount <= 0)
+            if (!disposed)
             {
-                Console.WriteLine("Сума має бути більше 0");
+                Console.WriteLine($"Dispose викликано для книги '{Title}'");
+                disposed = true;
+                GC.SuppressFinalize(this);
+            }
+        }
+        
+        ~Book()
+        {
+            Console.WriteLine($"Фіналізатор викликано для книги '{Title}'");
+        }
+    }
+
+    //2
+    class Library : IDisposable
+    {
+        private List<Book> books;
+        private bool disposed = false;
+        
+        public Library()
+        {
+            books = new List<Book>();
+            Console.WriteLine("Бібліотека створена");
+        }
+        
+        public void AddBook(Book book)
+        {
+            books.Add(book);
+            Console.WriteLine($"Книга '{book.Title}' додана до бібліотеки");
+        }
+        
+        public void ShowAllBooks()
+        {
+            Console.WriteLine($"\n=== Книги в бібліотеці (всього: {books.Count}) ===");
+            
+            if (books.Count == 0)
+            {
+                Console.WriteLine("Бібліотека порожня");
                 return;
             }
             
-            balance += amount;
-            
-            if (MoneyAdded != null)
+            for (int i = 0; i < books.Count; i++)
             {
-                MoneyAdded(amount);
+                Console.WriteLine($"\nКнига {i + 1}:");
+                books[i].ShowInfo();
             }
-
-            if (targetAmount > 0 && balance >= targetAmount)
+        }
+        
+        public void Dispose()
+        {
+            if (!disposed)
             {
-                if (TargetAmountReached != null)
+                Console.WriteLine("\nDispose викликано для бібліотеки");
+                Console.WriteLine("Очищення ресурсів бібліотеки...");
+                
+                if (books != null)
                 {
-                    TargetAmountReached(targetAmount);
+                    foreach (Book book in books)
+                    {
+                        book.Dispose();
+                    }
+                    books.Clear();
+                    Console.WriteLine("Список книг очищено");
                 }
-                targetAmount = 0;
-            }
-            
-            if (isUsingCredit && balance > 0)
-            {
-                isUsingCredit = false;
+                
+                disposed = true;
+                GC.SuppressFinalize(this);
             }
         }
         
-        public void SpendMoney(double amount)
+        ~Library()
         {
-            if (amount <= 0)
-            {
-                Console.WriteLine("Сума має бути більше 0");
-                return;
-            }
-            
-            if (balance + creditLimit < amount)
-            {
-                Console.WriteLine("Недостатньо коштів. Ліміт перевищено");
-                return;
-            }
-
-            bool wasPositive = balance > 0;
-            balance -= amount;
-
-            if (MoneySpent != null)
-            {
-                MoneySpent(amount);
-            }
-            
-            if (wasPositive && balance < 0 && !isUsingCredit)
-            {
-                isUsingCredit = true;
-                if (CreditStarted != null)
-                {
-                    CreditStarted();
-                }
-            }
-        }
-        
-        public void SetTargetAmount(double amount)
-        {
-            targetAmount = amount;
-            Console.WriteLine("Встановлено цільову суму: " + amount + " грн");
-        }
-        
-        public void ChangePin(string oldPin, string newPin)
-        {
-            if (oldPin != pin)
-            {
-                Console.WriteLine("Неправильний старий PIN");
-                return;
-            }
-            
-            if (newPin.Length != 4)
-            {
-                Console.WriteLine("PIN має складатися з 4 цифр");
-                return;
-            }
-            
-            pin = newPin;
-            
-            if (PinChanged != null)
-            {
-                PinChanged();
-            }
+            Console.WriteLine("Фіналізатор викликано для бібліотеки");
         }
     }
 }
